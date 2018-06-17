@@ -37,6 +37,8 @@ open class ChromaColorPicker: UIControl {
     open var addButton: ChromaAddButton!
     open var colorToggleButton: ColorModeToggleButton!
     
+    open var colorChanged: ((UIColor) -> Void)?
+
     private var modeIsGrayscale: Bool {
         return colorToggleButton.colorState == .grayscale
     }
@@ -425,6 +427,11 @@ open class ChromaColorPicker: UIControl {
     func updateCurrentColor(_ color: UIColor){
         currentColor = color
         addButton.color = color
+        
+        if let c = colorChanged {
+            c(color)
+        }
+        
         self.sendActions(for: .valueChanged)
     }
     
