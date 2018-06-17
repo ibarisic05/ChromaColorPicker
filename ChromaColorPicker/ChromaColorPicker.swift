@@ -404,7 +404,7 @@ open class ChromaColorPicker: UIControl {
         
 
         let sliderSize = CGSize(width: deltaX * 0.75, height: 0.08 * (bounds.height - padding*2))//bounds.height
-        shadeSlider.frame = CGRect(x: bounds.midX - sliderSize.width/2, y: pointLeft.y - sliderSize.height/2, width: sliderSize.width, height: sliderSize.height)
+        shadeSlider.frame = CGRect(x: bounds.midX - sliderSize.width/2, y: bounds.height/2 - sliderSize.height, width: sliderSize.width, height: sliderSize.height*2)
         shadeSlider.handleCenterX = shadeSlider.bounds.width/2 //set handle starting position
         shadeSlider.layoutLayerFrames() //call sliders' layout function
     }
