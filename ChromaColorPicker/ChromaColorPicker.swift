@@ -176,6 +176,10 @@ open class ChromaColorPicker: UIControl {
         self.layoutHandle()
         self.layoutHandleLine()
         self.updateHexLabel()
+        
+        if let c = colorChanged {
+            c(color)
+        }
     }
     
     //MARK: - Handle Touches
