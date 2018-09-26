@@ -15,22 +15,31 @@
 //
 
 /**
- * @file
- * @brief Helper macros for performing assertions and throwing assertion failure exceptions.
+ *  @file
+ *  @brief Helper macros for performing assertions and throwing assertion failure exceptions.
+ *  On failure, these macros take screenshots and log full view hierarchy. They wait for app to idle
+ *  before performing the assertion.
  */
 
 #ifndef GREY_ASSERTION_DEFINES_H
 #define GREY_ASSERTION_DEFINES_H
 
+#import <EarlGrey/GREYConfiguration.h>
 #import <EarlGrey/GREYDefines.h>
 #import <EarlGrey/GREYFailureHandler.h>
 #import <EarlGrey/GREYFrameworkException.h>
+#import <EarlGrey/GREYUIThreadExecutor.h>
 
-GREY_EXTERN NSString *const kGREYFailureHandlerKey;
+/**
+ *  Exposes internal method to get the failure handler registered with EarlGrey.
+ *  It must be called from main thread otherwise the behavior is undefined.
+ */
+GREY_EXPORT id<GREYFailureHandler> grey_getFailureHandler(void);
 
-#pragma mark - Public
-
-// Safe to call from anywhere within EarlGrey test.
+/**
+ *  These Macros are safe to call from anywhere within a testcase.
+ */
+#pragma mark - Public Macros
 
 /**
  *  Generates a failure with the provided @c __description if the expression @c __a1 evaluates to
@@ -44,6 +53,8 @@ GREY_EXTERN NSString *const kGREYFailureHandlerKey;
 #define GREYAssert(__a1, __description, ...) \
 ({ \
   I_GREYSetCurrentAsFailable(); \
+  NSString *timeoutString__ = @"Couldn't assert that (" #__a1 ") is true."; \
+  I_GREYWaitForIdle(timeoutString__); \
   I_GREYAssertTrue((__a1), (__description), ##__VA_ARGS__); \
 })
 
@@ -59,6 +70,8 @@ GREY_EXTERN NSString *const kGREYFailureHandlerKey;
 #define GREYAssertTrue(__a1, __description, ...) \
 ({ \
   I_GREYSetCurrentAsFailable(); \
+  NSString *timeoutString__ = @"Couldn't assert that (" #__a1 ") is true."; \
+  I_GREYWaitForIdle(timeoutString__); \
   I_GREYAssertTrue((__a1), (__description), ##__VA_ARGS__); \
 })
 
@@ -74,6 +87,8 @@ GREY_EXTERN NSString *const kGREYFailureHandlerKey;
 #define GREYAssertFalse(__a1, __description, ...) \
 ({ \
   I_GREYSetCurrentAsFailable(); \
+  NSString *timeoutString__ = @"Couldn't assert that (" #__a1 ") is false."; \
+  I_GREYWaitForIdle(timeoutString__); \
   I_GREYAssertFalse((__a1), (__description), ##__VA_ARGS__); \
 })
 
@@ -88,6 +103,8 @@ GREY_EXTERN NSString *const kGREYFailureHandlerKey;
 #define GREYAssertNotNil(__a1, __description, ...) \
 ({ \
   I_GREYSetCurrentAsFailable(); \
+  NSString *timeoutString__ = @"Couldn't assert that (" #__a1 ") is not nil."; \
+  I_GREYWaitForIdle(timeoutString__); \
   I_GREYAssertNotNil((__a1), (__description), ##__VA_ARGS__); \
 })
 
@@ -102,6 +119,8 @@ GREY_EXTERN NSString *const kGREYFailureHandlerKey;
 #define GREYAssertNil(__a1, __description, ...) \
 ({ \
   I_GREYSetCurrentAsFailable(); \
+  NSString *timeoutString__ = @"Couldn't assert that (" #__a1 ") is nil."; \
+  I_GREYWaitForIdle(timeoutString__); \
   I_GREYAssertNil((__a1), (__description), ##__VA_ARGS__); \
 })
 
@@ -119,6 +138,8 @@ GREY_EXTERN NSString *const kGREYFailureHandlerKey;
 #define GREYAssertEqual(__a1, __a2, __description, ...) \
 ({ \
   I_GREYSetCurrentAsFailable(); \
+  NSString *timeoutString__ = @"Couldn't assert that (" #__a1 ") and (" #__a2 ") are equal."; \
+  I_GREYWaitForIdle(timeoutString__); \
   I_GREYAssertEqual((__a1), (__a2), (__description), ##__VA_ARGS__); \
 })
 
@@ -136,6 +157,9 @@ GREY_EXTERN NSString *const kGREYFailureHandlerKey;
 #define GREYAssertNotEqual(__a1, __a2, __description, ...) \
 ({ \
   I_GREYSetCurrentAsFailable(); \
+  NSString *timeoutString__ = \
+      @"Couldn't assert that (" #__a1 ") and (" #__a2 ") are not equal."; \
+  I_GREYWaitForIdle(timeoutString__); \
   I_GREYAssertNotEqual((__a1), (__a2), (__description), ##__VA_ARGS__); \
 })
 
@@ -153,6 +177,9 @@ GREY_EXTERN NSString *const kGREYFailureHandlerKey;
 #define GREYAssertEqualObjects(__a1, __a2, __description, ...) \
 ({ \
   I_GREYSetCurrentAsFailable(); \
+  NSString *timeoutString__ = \
+      @"Couldn't assert that (" #__a1 ") and (" #__a2 ") are equal objects."; \
+  I_GREYWaitForIdle(timeoutString__); \
   I_GREYAssertEqualObjects((__a1), (__a2), __description, ##__VA_ARGS__); \
 })
 
@@ -170,6 +197,9 @@ GREY_EXTERN NSString *const kGREYFailureHandlerKey;
 #define GREYAssertNotEqualObjects(__a1, __a2, __description, ...) \
 ({ \
   I_GREYSetCurrentAsFailable(); \
+  NSString *timeoutString__ = \
+      @"Couldn't assert that (" #__a1 ") and (" #__a2 ") are not equal objects."; \
+  I_GREYWaitForIdle(timeoutString__); \
   I_GREYAssertNotEqualObjects((__a1), (__a2), (__description), ##__VA_ARGS__); \
 })
 
@@ -182,8 +212,8 @@ GREY_EXTERN NSString *const kGREYFailureHandlerKey;
  */
 #define GREYFail(__description, ...) \
 ({ \
-    I_GREYSetCurrentAsFailable(); \
-    I_GREYFail((__description), ##__VA_ARGS__); \
+  I_GREYSetCurrentAsFailable(); \
+  I_GREYFail((__description), ##__VA_ARGS__); \
 })
 
 /**
@@ -200,12 +230,54 @@ GREY_EXTERN NSString *const kGREYFailureHandlerKey;
   I_GREYFailWithDetails((__description), (__details), ##__VA_ARGS__); \
 })
 
-#pragma mark - Private Use By Framework Only
+/**
+ *  Generates a failure unconditionally for when the constraints for performing an action fail,
+ *  with the provided @c __description and @c __details.
+ *
+ *  @param __description  Description to print.
+ *  @param __details      The failure details. May be a format string, in which case the variable
+ *                        args will be required.
+ *  @param ...            Variable args for @c __description if it is a format string.
+ */
+#define GREYConstraintsFailedWithDetails(__description, __details, ...)  \
+({ \
+  I_GREYSetCurrentAsFailable(); \
+  I_GREYConstraintsFailedWithDetails((__description), (__details), ##__VA_ARGS__); \
+})
 
-// THESE ARE METHODS TO BE CALLED BY THE FRAMEWORK ONLY.
-// DO NOT CALL OUTSIDE FRAMEWORK
+#pragma mark - Private Macros
+
+/**
+ *  THESE ARE METHODS TO BE CALLED BY THE FRAMEWORK ONLY.
+ *  DO NOT CALL OUTSIDE FRAMEWORK
+ */
 
 /// @cond INTERNAL
+
+// No private macro should call this.
+#define I_GREYSetCurrentAsFailable() \
+({ \
+  id<GREYFailureHandler> failureHandler__ = grey_getFailureHandler(); \
+  if ([failureHandler__ respondsToSelector:@selector(setInvocationFile:andInvocationLine:)]) { \
+    [failureHandler__ setInvocationFile:[NSString stringWithUTF8String:__FILE__] \
+                      andInvocationLine:__LINE__]; \
+  } \
+})
+
+// No private macro should call this.
+#define I_GREYWaitForIdle(__timeoutDescription) \
+({ \
+  CFTimeInterval interactionTimeout__ = \
+      GREY_CONFIG_DOUBLE(kGREYConfigKeyInteractionTimeoutDuration); \
+  NSError *error__; \
+  BOOL success__ = \
+      [[GREYUIThreadExecutor sharedInstance] executeSyncWithTimeout:interactionTimeout__ \
+                                                              block:nil \
+                                                            error:&error__]; \
+  if (!success__) { \
+    I_GREYTimeout(__timeoutDescription, @"Timed out waiting for app to idle. %@", error__); \
+  } \
+})
 
 #define I_GREYFormattedString(__var, __format, ...) \
 ({ \
@@ -221,22 +293,10 @@ GREY_EXTERN NSString *const kGREYFailureHandlerKey;
 ({ \
   NSString *details__; \
   I_GREYFormattedString(details__, __details, ##__VA_ARGS__); \
-  id<GREYFailureHandler> failureHandler__ = \
-      [[[NSThread currentThread] threadDictionary] valueForKey:kGREYFailureHandlerKey]; \
+  id<GREYFailureHandler> failureHandler__ = grey_getFailureHandler(); \
   [failureHandler__ handleException:[GREYFrameworkException exceptionWithName:__exceptionName \
                                                                        reason:(__description)] \
                             details:(details__)]; \
-})
-
-// No private macro should call this.
-#define I_GREYSetCurrentAsFailable() \
-({ \
-  id<GREYFailureHandler> failureHandler__ = \
-      [[[NSThread currentThread] threadDictionary] valueForKey:kGREYFailureHandlerKey]; \
-  if ([failureHandler__ respondsToSelector:@selector(setInvocationFile:andInvocationLine:)]) { \
-    [failureHandler__ setInvocationFile:[NSString stringWithUTF8String:__FILE__] \
-                      andInvocationLine:__LINE__]; \
-  } \
 })
 
 #define I_GREYAssertTrue(__a1, __description, ...) \
@@ -245,7 +305,7 @@ GREY_EXTERN NSString *const kGREYFailureHandlerKey;
     NSString *formattedDescription__; \
     I_GREYFormattedString(formattedDescription__, (__description), ##__VA_ARGS__); \
     I_GREYRegisterFailure(kGREYAssertionFailedException, \
-                          @"((" #__a1 ") is true) failed", \
+                          @"(" #__a1 " is true) failed", \
                           formattedDescription__); \
   } \
 })
@@ -256,7 +316,7 @@ GREY_EXTERN NSString *const kGREYFailureHandlerKey;
     NSString *formattedDescription__; \
     I_GREYFormattedString(formattedDescription__, (__description), ##__VA_ARGS__); \
     I_GREYRegisterFailure(kGREYAssertionFailedException, \
-                          @"((" #__a1 ") is false) failed", \
+                          @"(" #__a1 " is false) failed", \
                           formattedDescription__); \
   } \
 })
@@ -267,7 +327,7 @@ GREY_EXTERN NSString *const kGREYFailureHandlerKey;
     NSString *formattedDescription__; \
     I_GREYFormattedString(formattedDescription__, (__description), ##__VA_ARGS__); \
     I_GREYRegisterFailure(kGREYNotNilException, \
-                          @"((" #__a1 ") != nil) failed", \
+                          @"(" #__a1 " != nil) failed", \
                           formattedDescription__); \
   } \
 })
@@ -278,7 +338,7 @@ GREY_EXTERN NSString *const kGREYFailureHandlerKey;
     NSString *formattedDescription__; \
     I_GREYFormattedString(formattedDescription__, (__description), ##__VA_ARGS__); \
     I_GREYRegisterFailure(kGREYNilException, \
-                          @"((" #__a1 ") == nil) failed", \
+                          @"(" #__a1 " == nil) failed", \
                           formattedDescription__); \
   } \
 })
@@ -289,7 +349,7 @@ GREY_EXTERN NSString *const kGREYFailureHandlerKey;
     NSString *formattedDescription__; \
     I_GREYFormattedString(formattedDescription__, (__description), ##__VA_ARGS__); \
     I_GREYRegisterFailure(kGREYAssertionFailedException, \
-                          @"((" #__a1 ") == (" #__a2 ")) failed", \
+                          @"(" #__a1 " == (" #__a2 ")) failed", \
                           formattedDescription__); \
   } \
 })
@@ -300,7 +360,7 @@ GREY_EXTERN NSString *const kGREYFailureHandlerKey;
     NSString *formattedDescription__; \
     I_GREYFormattedString(formattedDescription__, (__description), ##__VA_ARGS__); \
     I_GREYRegisterFailure(kGREYAssertionFailedException, \
-                          @"((" #__a1 ") != (" #__a2 ")) failed", \
+                          @"(" #__a1 " != (" #__a2 ")) failed", \
                           formattedDescription__); \
     } \
 })
@@ -311,7 +371,7 @@ GREY_EXTERN NSString *const kGREYFailureHandlerKey;
     NSString *formattedDescription__; \
     I_GREYFormattedString(formattedDescription__, (__description), ##__VA_ARGS__); \
     I_GREYRegisterFailure(kGREYAssertionFailedException, \
-                          @"[(" #__a1 ") isEqual:(" #__a2 ")] failed", \
+                          @"[" #__a1 " isEqual:(" #__a2 ")] failed", \
                           formattedDescription__); \
   } \
 })
@@ -322,7 +382,7 @@ GREY_EXTERN NSString *const kGREYFailureHandlerKey;
     NSString *formattedDescription__; \
     I_GREYFormattedString(formattedDescription__, (__description), ##__VA_ARGS__); \
     I_GREYRegisterFailure(kGREYAssertionFailedException, \
-                          @"![(" #__a1 ") isEqual:(" #__a2 ")] failed", \
+                          @"![" #__a1 " isEqual:(" #__a2 ")] failed", \
                           formattedDescription__); \
   } \
 })
@@ -336,6 +396,9 @@ GREY_EXTERN NSString *const kGREYFailureHandlerKey;
 
 #define I_GREYFailWithDetails(__description, __details, ...)  \
   I_GREYRegisterFailure(kGREYGenericFailureException, __description, __details, ##__VA_ARGS__)
+
+#define I_GREYConstraintsFailedWithDetails(__description, __details, ...)  \
+  I_GREYRegisterFailure(kGREYConstraintFailedException, __description, __details, ##__VA_ARGS__)
 
 #define I_GREYTimeout(__description, __details, ...) \
   I_GREYRegisterFailure(kGREYTimeoutException, __description, __details, ##__VA_ARGS__)
@@ -354,9 +417,6 @@ GREY_EXTERN NSString *const kGREYFailureHandlerKey;
                         __description, \
                         __details, \
                         ##__VA_ARGS__)
-
-#define I_CHECK_MAIN_THREAD() \
-  I_GREYAssertTrue([NSThread isMainThread], @"Must be on the main thread.")
 
 /// @endcond
 

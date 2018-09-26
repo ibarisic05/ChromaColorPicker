@@ -14,8 +14,9 @@
 // limitations under the License.
 //
 
-#import <EarlGrey/GREYDefines.h>
 #import <Foundation/Foundation.h>
+
+#import <EarlGrey/GREYDefines.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -56,6 +57,12 @@ GREY_EXTERN NSString *const kGREYMultipleElementsFoundException;
  *  app to become idle.
  */
 GREY_EXTERN NSString *const kGREYTimeoutException;
+
+/**
+ *  Thrown by the action API when the constraints required for performing the action are not
+ *  satisfied.
+ */
+GREY_EXTERN NSString *const kGREYConstraintFailedException;
 
 /**
  *  Exception raised by the framework which results in a test failure.

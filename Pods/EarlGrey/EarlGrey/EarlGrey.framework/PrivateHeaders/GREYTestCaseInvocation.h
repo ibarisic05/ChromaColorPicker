@@ -17,24 +17,7 @@
 #import <Foundation/Foundation.h>
 
 /**
- *  Class used to weakly hold an object so that the object can safely be dereferenced even it has
- *  been deallocated.
+ *  Class used for invoking a test case method and updating the status of the test case
  */
-@interface GREYWeakObjectContainer : NSObject
-
-/**
- *  Initialize the container with @c object.
- *
- *  @param object The object to be weakly held by the container.
- */
-- (instancetype)initWithObject:(id)object;
-
-- (instancetype)init NS_UNAVAILABLE;
-
-/**
- *  The weakly held object. Getting the object will return nil if the object has been deallocated.
- */
-@property(nonatomic, readonly, weak) id object;
-
+@interface GREYTestCaseInvocation : NSInvocation
 @end
-
